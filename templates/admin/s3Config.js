@@ -67,8 +67,11 @@ export const s3ConfigHTML = `
                 <input type="text" id="bucketId" placeholder="留空则不在Snippets中显示">
                 <small style="color:#64748b;">填写后将在Snippets规则中显示为键名</small>
             </div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button type="button" class="btn-icon" id="verifyBucketBtn" style="background: #3b82f6; color: white;">验证连接</button>
+                <button type="submit" class="modal-btn" id="saveBucketBtn" style="flex: 1;">保存</button>
+            </div>
             <input type="hidden" id="editingIndex" value="-1">
-            <button type="submit" class="modal-btn" id="saveBucketBtn">保存</button>
         </form>
     </div>
 </div>
