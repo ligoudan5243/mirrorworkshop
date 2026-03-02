@@ -932,7 +932,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 11. 队列信息显示（从后端获取真实数据）
+    // 11. 队列信息显示（从后端获取真实数据，轮询间隔60秒以减少KV读取）
     // ============================================================================
 
     const queueMenuBtn = safeGet('queueMenuBtn');
@@ -989,7 +989,8 @@ export const clientJS = `
     function startQueueInfoPolling() {
         if (queueInfoInterval) clearInterval(queueInfoInterval);
         updateQueueInfo();
-        queueInfoInterval = setInterval(updateQueueInfo, 3000);
+        // 为避免 KV 读取操作过频，轮询间隔改为 60 秒
+        queueInfoInterval = setInterval(updateQueueInfo, 60000);
     }
 
     function stopQueueInfoPolling() {
