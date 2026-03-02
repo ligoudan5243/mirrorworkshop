@@ -64,8 +64,8 @@ export const clientJS = `
     function updateConfigUI() {
         const officialHostname = safeGet('officialHostname');
         const bucketHostname = safeGet('bucketHostname');
-        if (officialHostname) officialHostname.value = config.officialHostname;
-        if (bucketHostname) bucketHostname.value = config.bucketHostname;
+        if (officialHostname) officialHostname.value = config.officialHostname || '';
+        if (bucketHostname) bucketHostname.value = config.bucketHostname || '';
     }
 
     // ============================================================================
@@ -183,7 +183,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 6. 桶管理（添加、编辑、删除模式）
+    // 6. 桶管理（添加、编辑、删除模式、导入/保存JSON、验证连接）
     // ============================================================================
 
     const bucketsList = safeGet('bucketsList');
@@ -204,6 +204,7 @@ export const clientJS = `
     const saveJsonBtn = safeGet('saveJsonBtn');
     const snippetsJson = safeGet('snippetsJson');
     const addHostnameCheck = safeGet('addHostnameCheck');
+    const verifyBucketBtn = safeGet('verifyBucketBtn');
 
     function generateBucketId() {
         return 'bucket-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8);
@@ -418,51 +419,10 @@ export const clientJS = `
             }
         });
     }
-    
-    // ============================================================================
-    // 主机名保存
-    // ============================================================================
-    const saveHostnameBtn = safeGet('saveHostnameBtn');
-    if (saveHostnameBtn) {
-        saveHostnameBtn.addEventListener('click', async () => {
-            const officialHostname = safeGet('officialHostname').value.trim();
-            const bucketHostname = safeGet('bucketHostname').value.trim();
 
-            // 构建新的配置对象，保留原来的 monitor 配置
-            const newConfig = {
-                ...config,
-                officialHostname,
-                bucketHostname
-            };
-
-            try {
-                const res = await fetch(apiBase + '/config', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newConfig)
-                });
-                if (!res.ok) throw new Error('保存失败');
-                const result = await res.json();
-                if (result.success) {
-                    alert('主机名配置已保存');
-                    // 更新本地 config
-                    config = newConfig;
-                } else {
-                    alert('保存失败');
-                }
-            } catch (e) {
-                alert('保存出错：' + e.message);
-            }
-        });
-    }
-    
-    // ============================================================================
     // 桶连接验证
-    // ============================================================================
-    const verifyBucketBtn = safeGet('verifyBucketBtn');
     if (verifyBucketBtn) {
         verifyBucketBtn.addEventListener('click', async () => {
-            // 获取当前表单中的值
             const keyID = bucketKeyID.value.trim();
             const appKey = bucketAppKey.value.trim();
             const bktName = bucketName.value.trim();
@@ -473,7 +433,6 @@ export const clientJS = `
                 return;
             }
 
-            // 显示加载状态
             const originalText = verifyBucketBtn.innerText;
             verifyBucketBtn.innerText = '验证中...';
             verifyBucketBtn.disabled = true;
@@ -504,8 +463,71 @@ export const clientJS = `
             }
         });
     }
+
     // ============================================================================
-    // 7. 首页搜索功能
+    // 7. 保存自定义主机名配置
+    // ============================================================================
+    const saveHostnameBtn = safeGet('saveHostnameBtn');
+    if (saveHostnameBtn) {
+        saveHostnameBtn.addEventListener('click', async () => {
+            const officialHostname = safeGet('officialHostname');
+            const bucketHostname = safeGet('bucketHostname');
+            if (!officialHostname || !bucketHostname) return;
+            
+            config.officialHostname = officialHostname.value;
+            config.bucketHostname = bucketHostname.value;
+            
+            try {
+                const res = await fetch(apiBase + '/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                if (res.ok) {
+                    alert('主机名配置已保存');
+                } else {
+                    alert('保存失败');
+                }
+            } catch (e) {
+                alert('保存失败：' + e.message);
+            }
+        });
+    }
+
+    // ============================================================================
+    // 8. 保存自动监控配置
+    // ============================================================================
+    const saveMonitorBtn = safeGet('saveMonitorBtn');
+    const monitorSwitch = safeGet('monitorSwitch');
+    const monitorDays = safeGet('monitorDays');
+    if (saveMonitorBtn) {
+        saveMonitorBtn.addEventListener('click', async () => {
+            const scope = document.querySelector('input[name="monitorScope"]:checked')?.value;
+            config.monitor = {
+                enabled: monitorSwitch ? monitorSwitch.checked : false,
+                scope: scope || 'all',
+                customProjects: config.monitor?.customProjects || [],
+                intervalDays: monitorDays ? parseInt(monitorDays.value) : 1
+            };
+            try {
+                const res = await fetch(apiBase + '/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                if (res.ok) {
+                    alert('监控配置已保存');
+                } else {
+                    alert('保存失败');
+                }
+            } catch (e) {
+                alert('保存失败：' + e.message);
+            }
+        });
+    }
+
+    // ============================================================================
+    // 9. 首页搜索功能
     // ============================================================================
 
     const modeToggleBtn = safeGet('modeToggleBtn');
@@ -712,7 +734,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 8. 后台项目添加搜索
+    // 10. 后台项目添加搜索
     // ============================================================================
 
     const addModeToggle = safeGet('addModeToggle');
@@ -724,7 +746,7 @@ export const clientJS = `
     const searchResultsScroll = safeGet('searchResultsScroll');
     const selectBucketModal = safeGet('selectBucketModal');
     const closeSelectBucketModal = safeGet('closeSelectBucketModal');
-    const bucketListRadio = safeGet('bucketListRadio');
+    const bucketCardGrid = safeGet('bucketCardGrid');
     const confirmSelectBucketBtn = safeGet('confirmSelectBucketBtn');
 
     let addMode = 'GitHub';
@@ -831,20 +853,39 @@ export const clientJS = `
         });
     }
 
-    // 桶选择模态框
+    // 桶选择模态框（卡片样式）
     function openSelectBucketModal() {
-        if (!bucketListRadio || !selectBucketModal) return;
+        if (!bucketCardGrid || !selectBucketModal) return;
+        
         if (buckets.length === 0) {
-            bucketListRadio.innerHTML = '<p style="color:#64748b; text-align:center;">暂无桶配置，请先添加</p>';
+            bucketCardGrid.innerHTML = '<div class="empty-state">暂无桶配置，请先添加</div>';
         } else {
-            bucketListRadio.innerHTML = buckets.map((bucket, index) => \`
-                <div style="margin-bottom: 0.5rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="radio" name="bucket" value="\${bucket.id}" \${index === 0 ? 'checked' : ''}>
-                        <span>\${bucket.customName}</span>
-                    </label>
-                </div>
-            \`).join('');
+            const cardsHtml = buckets.map((bucket, index) => {
+                const usagePercent = (bucket.usage / bucket.total) * 100;
+                let bgColorClass = 'green';
+                if (usagePercent >= 80) bgColorClass = 'red';
+                else if (usagePercent >= 60) bgColorClass = 'orange';
+                else if (usagePercent >= 40) bgColorClass = 'yellow';
+
+                return \`
+                    <div class="bucket-card selectable-card" data-bucket-id="\${bucket.id}" data-index="\${index}">
+                        <div class="progress-bg \${bgColorClass}" style="width: \${usagePercent}%;"></div>
+                        <div class="percentage">\${usagePercent.toFixed(1)}%</div>
+                        <div class="bucket-content">
+                            <span class="bucket-name">\${bucket.customName}</span>
+                        </div>
+                    </div>
+                \`;
+            }).join('');
+            bucketCardGrid.innerHTML = cardsHtml;
+
+            // 添加点击选中效果
+            document.querySelectorAll('.selectable-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.selectable-card').forEach(c => c.classList.remove('bucket-card-selected'));
+                    card.classList.add('bucket-card-selected');
+                });
+            });
         }
         selectBucketModal.style.display = 'flex';
     }
@@ -862,13 +903,12 @@ export const clientJS = `
 
     if (confirmSelectBucketBtn) {
         confirmSelectBucketBtn.addEventListener('click', async () => {
-            if (!selectBucketModal) return;
-            const selectedRadio = document.querySelector('input[name="bucket"]:checked');
-            if (!selectedRadio) {
+            const selectedCard = document.querySelector('.selectable-card.bucket-card-selected');
+            if (!selectedCard) {
                 alert('请选择一个桶');
                 return;
             }
-            const bucketId = selectedRadio.value;
+            const bucketId = selectedCard.dataset.bucketId;
             const project = currentProjectToBackup;
             if (!project) {
                 alert('项目信息丢失');
@@ -892,7 +932,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 9. 队列信息显示（从后端获取真实数据）
+    // 11. 队列信息显示（从后端获取真实数据）
     // ============================================================================
 
     const queueMenuBtn = safeGet('queueMenuBtn');
@@ -972,7 +1012,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 10. 项目卡片渲染
+    // 12. 项目卡片渲染
     // ============================================================================
 
     const githubGrid = safeGet('githubGrid');
@@ -1072,7 +1112,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 11. 悬浮窗（Releases）
+    // 13. 悬浮窗（Releases）
     // ============================================================================
 
     const popup = safeGet('releasesPopup');
@@ -1162,7 +1202,7 @@ export const clientJS = `
     if (popup) popup.addEventListener('click', (e) => { if (e.target === popup) popup.style.display = 'none'; });
 
     // ============================================================================
-    // 12. 标签切换
+    // 14. 标签切换
     // ============================================================================
 
     function setActiveTab(tabId) {
@@ -1185,7 +1225,7 @@ export const clientJS = `
     tabs.forEach(tab => tab.addEventListener('click', () => setActiveTab(tab.dataset.tab)));
 
     // ============================================================================
-    // 13. 任务轮询
+    // 15. 任务轮询
     // ============================================================================
 
     function pollTaskStatus(taskId) {
@@ -1207,7 +1247,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 14. 事件绑定（登录等）
+    // 16. 事件绑定（登录等）
     // ============================================================================
 
     if (loginBtn) loginBtn.addEventListener('click', () => { if (loginModal) loginModal.style.display = 'flex'; });
@@ -1249,9 +1289,6 @@ export const clientJS = `
     if (saveCustomProjects) saveCustomProjects.addEventListener('click', () => { if (customProjectModal) customProjectModal.style.display = 'none'; alert('已保存自定义项目选择（演示）'); });
     if (customProjectModal) customProjectModal.addEventListener('click', e => { if (e.target === customProjectModal) customProjectModal.style.display = 'none'; });
 
-    const monitorSwitch = safeGet('monitorSwitch');
-    if (monitorSwitch) monitorSwitch.addEventListener('change', e => console.log('监控开关:', e.target.checked));
-
     // 全局演示提示
     document.addEventListener('click', (e) => {
         if (e.target.closest('.git-link-btn')) alert('复制 Git 链接演示 (本站代理链接)');
@@ -1260,7 +1297,7 @@ export const clientJS = `
     });
 
     // ============================================================================
-    // 15. 初始化
+    // 17. 初始化
     // ============================================================================
 
     await loadData();
