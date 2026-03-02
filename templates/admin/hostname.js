@@ -13,5 +13,8 @@ export const hostnameHTML = `
         </div>
         <p style="color:#475569; font-size:0.9rem;">设置后，相应卡片中的下载链接会替换为自定义主机名</p>
     </div>
+    <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+        <button class="btn-icon" id="saveHostnameBtn"><i class="fas fa-save"></i> 保存</button>
+    </div>
 </div>
 `;
