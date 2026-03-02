@@ -418,7 +418,55 @@ export const clientJS = `
             }
         });
     }
+    
+    // ============================================================================
+    // 桶连接验证
+    // ============================================================================
+    const verifyBucketBtn = safeGet('verifyBucketBtn');
+    if (verifyBucketBtn) {
+        verifyBucketBtn.addEventListener('click', async () => {
+            // 获取当前表单中的值
+            const keyID = bucketKeyID.value.trim();
+            const appKey = bucketAppKey.value.trim();
+            const bktName = bucketName.value.trim();
+            const endpoint = bucketEndpoint.value.trim();
 
+            if (!keyID || !appKey || !bktName || !endpoint) {
+                alert('请先填写密钥ID、密钥、存储桶名和端点');
+                return;
+            }
+
+            // 显示加载状态
+            const originalText = verifyBucketBtn.innerText;
+            verifyBucketBtn.innerText = '验证中...';
+            verifyBucketBtn.disabled = true;
+
+            try {
+                const res = await fetch(apiBase + '/verify-bucket', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        keyID,
+                        applicationKey: appKey,
+                        bucketName: bktName,
+                        endpoint
+                    })
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    alert('✅ 连接成功！');
+                } else {
+                    alert('❌ 连接失败：' + (result.error || '未知错误'));
+                }
+            } catch (e) {
+                alert('验证请求失败：' + e.message);
+            } finally {
+                verifyBucketBtn.innerText = originalText;
+                verifyBucketBtn.disabled = false;
+            }
+        });
+    }
     // ============================================================================
     // 7. 首页搜索功能
     // ============================================================================
