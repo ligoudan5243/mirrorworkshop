@@ -420,6 +420,43 @@ export const clientJS = `
     }
     
     // ============================================================================
+    // 主机名保存
+    // ============================================================================
+    const saveHostnameBtn = safeGet('saveHostnameBtn');
+    if (saveHostnameBtn) {
+        saveHostnameBtn.addEventListener('click', async () => {
+            const officialHostname = safeGet('officialHostname').value.trim();
+            const bucketHostname = safeGet('bucketHostname').value.trim();
+
+            // 构建新的配置对象，保留原来的 monitor 配置
+            const newConfig = {
+                ...config,
+                officialHostname,
+                bucketHostname
+            };
+
+            try {
+                const res = await fetch(apiBase + '/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newConfig)
+                });
+                if (!res.ok) throw new Error('保存失败');
+                const result = await res.json();
+                if (result.success) {
+                    alert('主机名配置已保存');
+                    // 更新本地 config
+                    config = newConfig;
+                } else {
+                    alert('保存失败');
+                }
+            } catch (e) {
+                alert('保存出错：' + e.message);
+            }
+        });
+    }
+    
+    // ============================================================================
     // 桶连接验证
     // ============================================================================
     const verifyBucketBtn = safeGet('verifyBucketBtn');
