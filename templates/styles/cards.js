@@ -274,7 +274,7 @@ export const cards = `
     /* 删除模式下的样式 */
 }
 
-/* 选中卡片的样式（优化版） */
+/* 选中卡片的样式 */
 .bucket-card.bucket-card-selected {
     border-color: #3b82f6;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
