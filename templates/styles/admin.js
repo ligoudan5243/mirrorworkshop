@@ -8,13 +8,13 @@ export const admin = `
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem; /* 减小底部间距 */
 }
 
 .admin-panel .section-title {
     font-size: 1.4rem;
     font-weight: 600;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem; /* 减小标题与卡片间距 */
     color: #0f172a;
 }
 
@@ -23,10 +23,11 @@ export const admin = `
     border-radius: 24px;
     border: 1px solid #e2e8f0;
     padding: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem; /* 减小卡片之间间距 */
     box-shadow: 0 4px 12px rgba(0,0,0,0.02);
 }
 
+/* 其他样式保持不变 */
 .admin-panel .card-header {
     display: flex;
     justify-content: space-between;
