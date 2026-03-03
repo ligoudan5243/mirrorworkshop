@@ -1,4 +1,4 @@
-// templates/styles/cards.js
+// templates/common/styles/cards.js
 export const cards = `
 /* 官网搜索结果卡片 */
 .official-result-card {
