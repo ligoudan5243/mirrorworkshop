@@ -32,10 +32,8 @@ export async function queueHandler(batch, env, ctx) {
     }
 }
 
-// 队列状态 API
 export async function handleQueueStatus(request, env) {
     const activeTasks = await env.B2_KV.get('active_tasks', 'json') || [];
-    // 确保每个任务包含前端需要的字段
     const tasks = activeTasks.map(t => ({
         name: t.name,
         progress: t.progress || 0,
