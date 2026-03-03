@@ -1,6 +1,4 @@
 // api/projects.js
-// 处理 /api/projects/* 和 /api/project（获取列表、创建备份任务）
-
 import { getJSON, putJSON, defaultGithubProjects, defaultDockerProjects } from '../lib/kv.js';
 
 export async function handleProjects(type, env) {
@@ -13,9 +11,12 @@ export async function handleProjects(type, env) {
 export async function handleProject(request, env) {
   const { type, name, bucketId } = await request.json();
   
-  // 目前仅支持 GitHub 完整备份
   if (type !== 'github') {
     return Response.json({ error: '目前仅支持 GitHub 项目完整备份' }, { status: 400 });
+  }
+
+  if (!bucketId) {
+    return Response.json({ error: 'Bucket ID is required' }, { status: 400 });
   }
 
   const [owner, repo] = name.split('/');
@@ -25,7 +26,6 @@ export async function handleProject(request, env) {
 
   const taskId = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
-  // 将主任务发送到队列
   await env.TASKS_QUEUE.send(JSON.stringify({
     type: 'master',
     taskId,
@@ -34,7 +34,6 @@ export async function handleProject(request, env) {
     bucketId,
   }));
 
-  // 初始化主任务状态（简单记录）
   await env.B2_KV.put(`master:${taskId}`, JSON.stringify({
     status: 'queued',
     owner,
