@@ -46,12 +46,12 @@ export const s3ConfigHTML = `
                 <label>自定义桶名 <span style="color:#ef4444;">*</span></label>
                 <input type="text" id="bucketCustomName" placeholder="例如: 我的默认桶" required>
             </div>
-            <!-- 内部ID显示区（纯文本） -->
-            <div style="margin-top: 0.5rem; margin-bottom: 1rem;">
-                <span style="color:#64748b; font-size:0.85rem;">系统生成的唯一标识，用于内部引用</span>
-                <div style="font-family: monospace; background: #f1f5f9; padding: 0.3rem 0.8rem; border-radius: 6px; display: inline-block; margin-top: 0.2rem;" id="displayInternalId"></div>
-                <input type="hidden" id="internalId">
+            <!-- 内部ID纯文本显示 -->
+            <div style="margin-bottom: 1rem;">
+                <span style="font-weight: 500; color: #334155;">桶内部ID (内部引用):</span>
+                <span id="displayInternalId" style="font-family: monospace; margin-left: 0.5rem;"></span>
             </div>
+            <input type="hidden" id="internalId">
 
             <div class="input-group">
                 <label>应用密钥ID (keyID) <span style="color:#ef4444;">*</span></label>
