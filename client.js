@@ -49,7 +49,7 @@ export const clientJS = `
             buckets = await bucketsRes.json();
             config = await configRes.json();
 
-            // 为每个桶添加模拟使用量（实际应从B2获取）
+            // 为每个桶添加模拟使用量（实际应从B2获取，但为了演示保留随机数）
             buckets = buckets.map(b => ({
                 ...b,
                 usage: b.usage !== undefined ? b.usage : Math.random() * 10,
@@ -183,7 +183,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 6. 桶管理（添加、编辑、删除模式）
+    // 6. 桶管理（添加、编辑、删除模式、导入/保存JSON、验证连接）
     // ============================================================================
 
     const bucketsList = safeGet('bucketsList');
@@ -204,6 +204,7 @@ export const clientJS = `
     const saveJsonBtn = safeGet('saveJsonBtn');
     const snippetsJson = safeGet('snippetsJson');
     const addHostnameCheck = safeGet('addHostnameCheck');
+    const verifyBucketBtn = safeGet('verifyBucketBtn');
 
     function generateBucketId() {
         return 'bucket-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8);
@@ -419,8 +420,114 @@ export const clientJS = `
         });
     }
 
+    // 桶连接验证
+    if (verifyBucketBtn) {
+        verifyBucketBtn.addEventListener('click', async () => {
+            const keyID = bucketKeyID.value.trim();
+            const appKey = bucketAppKey.value.trim();
+            const bktName = bucketName.value.trim();
+            const endpoint = bucketEndpoint.value.trim();
+
+            if (!keyID || !appKey || !bktName || !endpoint) {
+                alert('请先填写密钥ID、密钥、存储桶名和端点');
+                return;
+            }
+
+            const originalText = verifyBucketBtn.innerText;
+            verifyBucketBtn.innerText = '验证中...';
+            verifyBucketBtn.disabled = true;
+
+            try {
+                const res = await fetch(apiBase + '/verify-bucket', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        keyID,
+                        applicationKey: appKey,
+                        bucketName: bktName,
+                        endpoint
+                    })
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    alert('✅ 连接成功！');
+                } else {
+                    alert('❌ 连接失败：' + (result.error || '未知错误'));
+                }
+            } catch (e) {
+                alert('验证请求失败：' + e.message);
+            } finally {
+                verifyBucketBtn.innerText = originalText;
+                verifyBucketBtn.disabled = false;
+            }
+        });
+    }
+
     // ============================================================================
-    // 7. 首页搜索功能
+    // 7. 保存自定义主机名配置
+    // ============================================================================
+    const saveHostnameBtn = safeGet('saveHostnameBtn');
+    if (saveHostnameBtn) {
+        saveHostnameBtn.addEventListener('click', async () => {
+            const officialHostname = safeGet('officialHostname');
+            const bucketHostname = safeGet('bucketHostname');
+            if (!officialHostname || !bucketHostname) return;
+            
+            config.officialHostname = officialHostname.value;
+            config.bucketHostname = bucketHostname.value;
+            
+            try {
+                const res = await fetch(apiBase + '/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                if (res.ok) {
+                    alert('主机名配置已保存');
+                } else {
+                    alert('保存失败');
+                }
+            } catch (e) {
+                alert('保存失败：' + e.message);
+            }
+        });
+    }
+
+    // ============================================================================
+    // 8. 保存自动监控配置
+    // ============================================================================
+    const saveMonitorBtn = safeGet('saveMonitorBtn');
+    const monitorSwitch = safeGet('monitorSwitch');
+    const monitorDays = safeGet('monitorDays');
+    if (saveMonitorBtn) {
+        saveMonitorBtn.addEventListener('click', async () => {
+            const scope = document.querySelector('input[name="monitorScope"]:checked')?.value;
+            config.monitor = {
+                enabled: monitorSwitch ? monitorSwitch.checked : false,
+                scope: scope || 'all',
+                customProjects: config.monitor?.customProjects || [],
+                intervalDays: monitorDays ? parseInt(monitorDays.value) : 1
+            };
+            try {
+                const res = await fetch(apiBase + '/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                if (res.ok) {
+                    alert('监控配置已保存');
+                } else {
+                    alert('保存失败');
+                }
+            } catch (e) {
+                alert('保存失败：' + e.message);
+            }
+        });
+    }
+
+    // ============================================================================
+    // 9. 首页搜索功能
     // ============================================================================
 
     const modeToggleBtn = safeGet('modeToggleBtn');
@@ -627,7 +734,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 8. 后台项目添加搜索
+    // 10. 后台项目添加搜索
     // ============================================================================
 
     const addModeToggle = safeGet('addModeToggle');
@@ -825,7 +932,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 9. 队列信息显示（修复版）
+    // 11. 队列信息显示（从后端获取真实数据，轮询间隔60秒以减少KV读取）
     // ============================================================================
 
     const queueMenuBtn = safeGet('queueMenuBtn');
@@ -848,7 +955,7 @@ export const clientJS = `
                     queueFileName.style.display = 'none';
                     queueFileCount.innerText = '暂无任务';
                 } else {
-                    // 显示第一个任务的进度
+                    // 计算总文件数和剩余文件数（取第一个任务示例）
                     const first = tasks[0];
                     const total = first.totalFiles || 0;
                     const processed = first.processedFiles || 0;
@@ -882,7 +989,8 @@ export const clientJS = `
     function startQueueInfoPolling() {
         if (queueInfoInterval) clearInterval(queueInfoInterval);
         updateQueueInfo();
-        queueInfoInterval = setInterval(updateQueueInfo, 3000);
+        // 为避免 KV 读取操作过频，轮询间隔改为 60 秒
+        queueInfoInterval = setInterval(updateQueueInfo, 60000);
     }
 
     function stopQueueInfoPolling() {
@@ -905,7 +1013,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 10. 项目卡片渲染
+    // 12. 项目卡片渲染
     // ============================================================================
 
     const githubGrid = safeGet('githubGrid');
@@ -1005,7 +1113,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 11. 悬浮窗（Releases）
+    // 13. 悬浮窗（Releases）
     // ============================================================================
 
     const popup = safeGet('releasesPopup');
@@ -1095,7 +1203,7 @@ export const clientJS = `
     if (popup) popup.addEventListener('click', (e) => { if (e.target === popup) popup.style.display = 'none'; });
 
     // ============================================================================
-    // 12. 标签切换
+    // 14. 标签切换
     // ============================================================================
 
     function setActiveTab(tabId) {
@@ -1118,7 +1226,7 @@ export const clientJS = `
     tabs.forEach(tab => tab.addEventListener('click', () => setActiveTab(tab.dataset.tab)));
 
     // ============================================================================
-    // 13. 任务轮询
+    // 15. 任务轮询（改进：显示失败文件）
     // ============================================================================
 
     function pollTaskStatus(taskId) {
@@ -1127,7 +1235,12 @@ export const clientJS = `
             const task = await res.json();
             if (task.status === 'completed') {
                 clearInterval(interval);
-                alert(\`备份完成！共上传 \${task.totalFiles} 个文件\`);
+                const failedCount = task.failedFiles ? task.failedFiles.length : 0;
+                if (failedCount > 0) {
+                    alert(\`备份完成！共上传 \${task.processedFiles} 个文件，失败 \${failedCount} 个文件。\`);
+                } else {
+                    alert(\`备份完成！共上传 \${task.totalFiles} 个文件\`);
+                }
                 location.reload();
             } else if (task.status === 'failed') {
                 clearInterval(interval);
@@ -1140,7 +1253,7 @@ export const clientJS = `
     }
 
     // ============================================================================
-    // 14. 事件绑定（登录等）
+    // 16. 事件绑定（登录等）
     // ============================================================================
 
     if (loginBtn) loginBtn.addEventListener('click', () => { if (loginModal) loginModal.style.display = 'flex'; });
@@ -1182,42 +1295,6 @@ export const clientJS = `
     if (saveCustomProjects) saveCustomProjects.addEventListener('click', () => { if (customProjectModal) customProjectModal.style.display = 'none'; alert('已保存自定义项目选择（演示）'); });
     if (customProjectModal) customProjectModal.addEventListener('click', e => { if (e.target === customProjectModal) customProjectModal.style.display = 'none'; });
 
-    // 监控开关演示
-    const monitorSwitch = safeGet('monitorSwitch');
-    if (monitorSwitch) monitorSwitch.addEventListener('change', e => console.log('监控开关:', e.target.checked));
-
-    // ============================================================================
-    // 15. 自定义主机名保存
-    // ============================================================================
-    const saveHostnameBtn = safeGet('saveHostnameBtn');
-    if (saveHostnameBtn) {
-        saveHostnameBtn.addEventListener('click', async () => {
-            const officialHostname = safeGet('officialHostname');
-            const bucketHostname = safeGet('bucketHostname');
-            if (!officialHostname || !bucketHostname) return;
-            const newConfig = {
-                ...config,
-                officialHostname: officialHostname.value,
-                bucketHostname: bucketHostname.value
-            };
-            try {
-                const res = await fetch(apiBase + '/config', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newConfig)
-                });
-                if (res.ok) {
-                    config = newConfig;
-                    alert('主机名配置已保存');
-                } else {
-                    alert('保存失败');
-                }
-            } catch (e) {
-                alert('保存失败：' + e.message);
-            }
-        });
-    }
-
     // 全局演示提示
     document.addEventListener('click', (e) => {
         if (e.target.closest('.git-link-btn')) alert('复制 Git 链接演示 (本站代理链接)');
@@ -1226,7 +1303,7 @@ export const clientJS = `
     });
 
     // ============================================================================
-    // 16. 初始化
+    // 17. 初始化
     // ============================================================================
 
     await loadData();

@@ -1,9 +1,9 @@
 // templates/admin/addProject.js
 export const addProjectHTML = `
 <div class="card">
-    <div class="card-header">
+    <div class="card-header" style="position: relative;">
         <h2>项目添加</h2>
-        <div class="queue-info" style="display: flex; align-items: center; gap: 0.5rem; position: relative;">
+        <div class="queue-info" style="display: flex; align-items: center; gap: 0.5rem;">
             <div class="queue-status" style="min-width: 150px; text-align: right;">
                 <span id="queueFileCount">总文件: 0</span>
                 <span id="queueFileName" style="display: none;">正在上传: 无</span>
@@ -11,11 +11,11 @@ export const addProjectHTML = `
             <div class="queue-menu" id="queueMenuBtn" style="cursor: pointer; padding: 0.3rem;">
                 <i class="fas fa-bars"></i>
             </div>
-            <!-- 队列详情面板移到内部 -->
-            <div id="queueDetailPanel" class="queue-detail-panel hide">
-                <h4>队列任务</h4>
-                <div id="queueTaskList"></div>
-            </div>
+        </div>
+        <!-- 队列详情面板移到此处作为绝对定位子元素 -->
+        <div id="queueDetailPanel" class="queue-detail-panel hide">
+            <h4>队列任务</h4>
+            <div id="queueTaskList"></div>
         </div>
     </div>
     <div class="search-box" style="max-width: 600px;">

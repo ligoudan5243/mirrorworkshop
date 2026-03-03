@@ -8,14 +8,33 @@ export const admin = `
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem; /* 减小间距，使卡片更靠近顶部 */
 }
 
 .admin-panel .section-title {
     font-size: 1.4rem;
     font-weight: 600;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0; /* 移除底部间距，由父容器控制 */
     color: #0f172a;
+}
+
+.back-home-btn {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 40px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.back-home-btn:hover {
+    background: #e2e8f0;
 }
 
 .admin-panel .card {
@@ -23,7 +42,7 @@ export const admin = `
     border-radius: 24px;
     border: 1px solid #e2e8f0;
     padding: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem; /* 卡片之间保持间距，但与顶部距离由 admin-header 控制 */
     box-shadow: 0 4px 12px rgba(0,0,0,0.02);
 }
 
@@ -32,6 +51,7 @@ export const admin = `
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    position: relative; /* 为队列面板提供定位上下文 */
 }
 
 .admin-panel .card-header h2 {

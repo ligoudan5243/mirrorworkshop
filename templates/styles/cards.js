@@ -274,7 +274,6 @@ export const cards = `
     /* 删除模式下的样式 */
 }
 
-/* 选中卡片的样式 */
 .bucket-card.bucket-card-selected {
     border-color: #3b82f6;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
@@ -357,14 +356,29 @@ export const cards = `
     cursor: pointer;
 }
 
-/* 队列详情面板定位 */
-.queue-info {
-    position: relative;
+/* Snippets 文本域 */
+#snippetsJson {
+    width: 100%;
+    height: 150px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    resize: vertical;
+    background: #f8fafc;
 }
 
+#snippetsJson:focus {
+    outline: none;
+    border-color: #94a3b8;
+    box-shadow: 0 0 0 2px #e2e8f0;
+}
+
+/* 队列详情面板 */
 .queue-detail-panel {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 5px);
     right: 0;
     width: 300px;
     background: white;
@@ -372,8 +386,8 @@ export const cards = `
     border-radius: 12px;
     box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
     padding: 1rem;
-    z-index: 50;
-    margin-top: 0.5rem;
+    z-index: 100;
+    margin-top: 0;
 }
 
 .queue-detail-panel h4 {
@@ -400,24 +414,5 @@ export const cards = `
 
 .queue-task-item .task-progress {
     color: #64748b;
-}
-
-/* Snippets 文本域 */
-#snippetsJson {
-    width: 100%;
-    height: 150px;
-    font-family: monospace;
-    font-size: 0.9rem;
-    padding: 0.5rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    resize: vertical;
-    background: #f8fafc;
-}
-
-#snippetsJson:focus {
-    outline: none;
-    border-color: #94a3b8;
-    box-shadow: 0 0 0 2px #e2e8f0;
 }
 `;
