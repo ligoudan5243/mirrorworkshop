@@ -1,6 +1,6 @@
 // templates/admin/addProject.js
 export const addProjectHTML = `
-<div class="card">
+<div class="card" style="position: relative;"> <!-- 添加相对定位 -->
     <div class="card-header">
         <h2>项目添加</h2>
         <div class="queue-info" style="display: flex; align-items: center; gap: 0.5rem;">
