@@ -375,19 +375,14 @@ export const cards = `
     box-shadow: 0 0 0 2px #e2e8f0;
 }
 
-/* 队列详情面板 - 修正定位 */
-.card-header {
-    position: relative; /* 确保子元素绝对定位相对于此 */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    z-index: 2; /* 保证下拉面板不被覆盖 */
+/* 队列详情面板 - 精确定位 */
+.queue-info {
+    position: relative;
 }
 
 .queue-detail-panel {
     position: absolute;
-    top: calc(100% + 0.5rem);
+    top: 100%;
     right: 0;
     width: 300px;
     background: white;
@@ -395,8 +390,8 @@ export const cards = `
     border-radius: 12px;
     box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
     padding: 1rem;
-    z-index: 50;
-    margin-top: 0;
+    z-index: 100;
+    margin-top: 0.5rem;
 }
 
 .queue-detail-panel.hide {
